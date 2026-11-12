@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pīwakawaka's Advanced Aerospace Journey</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #F0F9FF; 
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
+            overflow: hidden; 
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none; 
+        }
+        
+        .starfield {
+            background-image: 
+                radial-gradient(rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0.05) 2px, transparent 4px),
+                radial-gradient(rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05) 1px, transparent 2px),
+                radial-gradient(rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05) 2px, transparent 3px),
+                radial-gradient(rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0.05) 2px, transparent 5px);
+            background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px;
+            background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;
+            z-index: 0;
+            animation: cosmic-drift 120s linear infinite;
+        }
+
+        @keyframes cosmic-drift {
+            0% { background-position: 0 0, 40px 60px, 130px 270px, 70px 100px; }
+            100% { background-position: -550px 550px, -310px 410px, -120px 520px, -80px 250px; }
+        }
+
+        .animate-float { animation: float 3s ease-in-out infinite; transform-origin: bottom center; }
+        @keyframes float { 0% { transform: translateY(0px) scale(1); } 50% { transform: translateY(-15px) scale(1.05); } 100% { transform: translateY(0px) scale(1); } }
+        
+        .animate-bounce-fast { animation: bounce-fast 0.6s infinite; }
+        @keyframes bounce-fast { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        
+        .animate-pulse-glow { animation: pulse-glow 2s infinite alternate; }
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 10px rgba(139, 92, 246, 0.4); } 100% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.9); } }
+        
+        .game-btn { box-shadow: 0 6px 0px rgba(0,0,0,0.3); transition: all 0.1s; }
+        .game-btn:active:not(:disabled) { transform: translateY(6px) !important; box-shadow: 0 0px 0px rgba(0,0,0,0.3) !important; }
+        .level-locked { filter: grayscale(100%) opacity(0.7); pointer-events: none; }
+        
+        .error-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 0, 0); } 40%, 60% { transform: translate3d(8px, 0, 0); } }
+        
+        .screen-container { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease-in-out; }
+        .slide-in-right { transform: translateX(0%); opacity: 1; pointer-events: auto; }
+        .slide-out-left { transform: translateX(-100%); opacity: 0; pointer-events: none; }
+        .slide-out-right { transform: translateX(100%); opacity: 0; pointer-events: none; }
+        
+        .particle { position: absolute; pointer-events: none; animation: pop 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 100; font-weight: bold; color: #fbbf24; }
+        @keyframes pop { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(var(--rot)); opacity: 0; } }
+        
+        .star-filled { filter: grayscale(0%) opacity(1) drop-shadow(0 0 5px #fbbf24); transform: scale(1.1); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .star-empty { filter: grayscale(100%) opacity(0.4); transform: scale(0.9); transition: all 0.3s; }
+        
+        /* Advanced Mobile Scroll System */
+        .scroll-area { 
+            -webkit-overflow-scrolling: touch; 
+            overscroll-behavior-y: contain; 
+            touch-action: pan-y !important; 
+            overflow-y: auto;
+            overflow-x: hidden;
+            height: 100%;
+        }
+
+        .scroll-area::-webkit-scrollbar { width: 8px; }
+        .scroll-area::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 8px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.6); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+        
+        .tts-active { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.6); border-color: #f59e0b !important; transform: scale(1.02); transition: all 0.3s ease-in-out; }
+        
+        .speech-bubble { position: relative; }
+        .speech-bubble::after { content: ''; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); border-width: 20px 20px 0; border-style: solid; border-color: white transparent transparent transparent; display: block; width: 0; z-index: 1; }
+        .speech-bubble::before { content: ''; position: absolute; bottom: -26px; left: 50%; transform: translateX(-50%); border-width: 24px 24px 0; border-style: solid; border-color: #c4b5fd transparent transparent transparent; display: block; width: 0; z-index: 0; }
+        
+        /* Aerospace Elements - Light Theme */
+        .space-moon { position: absolute; top: 8%; right: 10%; width: 120px; height: 120px; background: radial-gradient(circle at 30% 30%, #fef08a, #f59e0b); border-radius: 50%; box-shadow: 0 0 60px rgba(245, 158, 11, 0.4), inset -15px -15px 30px rgba(0,0,0,0.1); pointer-events: none; z-index: 0; animation: pulse-sun 6s infinite alternate;}
+        @keyframes pulse-sun { 0% { box-shadow: 0 0 40px rgba(245, 158, 11, 0.3), inset -15px -15px 30px rgba(0,0,0,0.1); } 100% { box-shadow: 0 0 70px rgba(245, 158, 11, 0.6), inset -15px -15px 30px rgba(0,0,0,0.1); } }
+        
+        .space-rocket { position: absolute; font-size: 4rem; opacity: 0.9; animation: space-fly 25s linear infinite; pointer-events: none; z-index: 0; filter: drop-shadow(0 0 10px rgba(0,0,0,0.15));}
+        @keyframes space-fly { 0% { transform: translate(-20vw, 80vh) rotate(45deg); } 100% { transform: translate(120vw, -20vh) rotate(45deg); } }
+
+        #level-visual div { font-size: 4rem !important; line-height: 1 !important; }
+        @media (min-width: 640px) { #level-visual div { font-size: 6rem !important; } }
+    </style>
+</head>
+<body>
+
+    <div class="absolute inset-0 pointer-events-none overflow-hidden starfield">
+        <div class="space-moon"></div>
+        <div class="space-rocket" style="animation-duration: 35s;">🚀</div>
+        <div class="space-rocket text-5xl" style="animation-duration: 45s; animation-delay: -15s; top: 20vh; opacity: 0.7;">🛸</div>
+        <div class="space-rocket text-6xl" style="animation-duration: 25s; animation-delay: -5s; top: 60vh; opacity: 0.8; transform: scaleX(-1);">🛰️</div>
+        
+        <div class="absolute bottom-0 w-full h-1/3 bg-gradient-to-t from-blue-200/60 to-transparent"></div>
+        <div class="absolute -bottom-64 left-1/2 -translate-x-1/2 w-[150vw] h-[80vh] rounded-[100%] bg-gradient-to-t from-cyan-300 via-blue-200 to-white/20 blur-xl opacity-60"></div>
+    </div>
+
+    <!-- Animal SVGs -->
+    <template id="svg-piwakawaka"><svg viewBox="0 0 100 100" class="w-32 h-32 sm:w-48 sm:h-48 drop-shadow-2xl"><path d="M40,55 C40,40 50,30 65,30 C75,30 80,40 75,55 C70,70 50,75 40,55 Z" fill="#8B5A2B"/><path d="M60,35 C70,35 75,45 70,55 Z" fill="#4A3020"/><ellipse cx="55" cy="50" rx="15" ry="10" fill="#E6DCC8"/><path d="M75,45 L85,42 L78,50 Z" fill="#333"/><circle cx="65" cy="40" r="3" fill="#000"/><circle cx="66" cy="39" r="1" fill="#fff"/><path d="M45,55 C20,40 10,60 15,80 C30,70 45,75 55,65 Z" fill="#A08060"/><path d="M15,80 C25,85 45,85 55,75" fill="none" stroke="#fff" stroke-width="2"/><path d="M50,70 L45,85 M55,70 L55,85" stroke="#333" stroke-width="2"/></svg></template>
+    <template id="svg-kekeno"><svg viewBox="0 0 100 100" class="w-32 h-32 sm:w-48 sm:h-48 drop-shadow-2xl"><path d="M10,85 C30,95 70,95 80,70 C90,40 75,20 60,25 C50,28 45,45 35,55 C20,70 10,70 10,85 Z" fill="#4a4441"/><path d="M40,70 C50,85 70,80 60,65 Z" fill="#302c2a"/><circle cx="65" cy="35" r="3" fill="#000"/><circle cx="80" cy="32" r="4" fill="#1a1a1a"/><path d="M82,35 L95,40 M82,38 L93,45" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg></template>
+    <template id="svg-kiwi"><svg viewBox="0 0 100 100" class="w-32 h-32 sm:w-48 sm:h-48 drop-shadow-2xl"><path d="M40,75 L40,90 M35,90 L45,90 M60,75 L60,90 M55,90 L65,90" stroke="#d97736" stroke-width="4" stroke-linecap="round"/><ellipse cx="50" cy="55" rx="35" ry="25" fill="#5c4033"/><circle cx="25" cy="45" r="15" fill="#5c4033"/><path d="M12,50 Q5,65 2,80" stroke="#e8c39e" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="20" cy="42" r="2.5" fill="#000"/></svg></template>
+    <template id="svg-huntaway"><svg viewBox="0 0 100 100" class="w-32 h-32 sm:w-48 sm:h-48 drop-shadow-2xl"><path d="M30,90 L30,50 C30,30 50,30 60,35 C75,40 85,50 85,70 L85,90 Z" fill="#111111"/><path d="M60,65 C75,65 85,75 85,90 L60,90 Z" fill="#c47029"/><circle cx="55" cy="40" r="4" fill="#c47029"/><path d="M75,55 C85,55 85,65 85,70 C75,70 70,65 75,55 Z" fill="#c47029"/><path d="M35,35 C25,45 25,60 35,55 Z" fill="#111111"/><circle cx="85" cy="55" r="3" fill="#000"/><circle cx="65" cy="45" r="2.5" fill="#fff"/><circle cx="66" cy="45" r="1.5" fill="#000"/></svg></template>
+    <template id="svg-kea"><svg viewBox="0 0 100 100" class="w-32 h-32 sm:w-48 sm:h-48 drop-shadow-2xl"><path d="M40,80 L40,90 M55,80 L55,90" stroke="#333" stroke-width="4" stroke-linecap="round"/><path d="M20,60 L5,85 L25,75 Z" fill="#4d5e3c"/><ellipse cx="45" cy="55" rx="25" ry="30" fill="#5e6b45"/><path d="M35,45 C50,45 65,70 45,80 Z" fill="#5e6b45"/><path d="M40,55 C55,55 60,70 45,75 Z" fill="#d95e16"/><circle cx="60" cy="35" r="18" fill="#5e6b45"/><path d="M75,30 C90,30 90,50 80,55 C85,45 80,40 75,40 Z" fill="#4a4a4a"/><circle cx="65" cy="32" r="2.5" fill="#000"/><circle cx="55" cy="40" r="4" fill="#d95e16" opacity="0.6"/></svg></template>
+    <template id="svg-whio"><svg viewBox="0 0 100 100" class="w-32 h-32 sm:w-48 sm:h-48 drop-shadow-2xl"><ellipse cx="50" cy="60" rx="35" ry="25" fill="#5A6B7C"/><circle cx="75" cy="40" r="15" fill="#5A6B7C"/><path d="M70,55 Q80,80 40,85 Z" fill="#8B4513"/><path d="M85,35 Q98,40 88,45 Z" fill="#E6DCC8"/><circle cx="78" cy="35" r="2.5" fill="#000"/></svg></template>
+    <template id="svg-tui"><svg viewBox="0 0 100 100" class="w-32 h-32 sm:w-48 sm:h-48 drop-shadow-2xl"><path d="M30,80 Q50,90 65,70 Q75,40 60,30 Q40,30 30,50 Z" fill="#1A2B3C"/><circle cx="55" cy="60" r="6" fill="#FFF" filter="drop-shadow(0 2px 2px rgba(0,0,0,0.3))"/><circle cx="65" cy="35" r="2" fill="#000"/><path d="M68,32 Q85,35 68,40 Z" fill="#111"/></svg></template>
+    <template id="svg-ruru"><svg viewBox="0 0 100 100" class="w-32 h-32 sm:w-48 sm:h-48 drop-shadow-2xl"><ellipse cx="50" cy="65" rx="30" ry="25" fill="#5C4033"/><circle cx="50" cy="35" r="22" fill="#4A3020"/><circle cx="40" cy="35" r="8" fill="#F4C430"/><circle cx="60" cy="35" r="8" fill="#F4C430"/><circle cx="40" cy="35" r="3" fill="#000"/><circle cx="60" cy="35" r="3" fill="#000"/><path d="M45,45 L55,45 L50,55 Z" fill="#111"/></svg></template>
+    <template id="svg-takahe"><svg viewBox="0 0 100 100" class="w-32 h-32 sm:w-48 sm:h-48 drop-shadow-2xl"><ellipse cx="45" cy="60" rx="35" ry="30" fill="#204070"/><ellipse cx="70" cy="40" rx="15" ry="18" fill="#204070"/><path d="M80,30 Q95,45 80,55 Z" fill="#C03030"/><circle cx="75" cy="35" r="2.5" fill="#000"/><path d="M35,80 L35,95 M55,80 L55,95" stroke="#C03030" stroke-width="4"/></svg></template>
+    <template id="svg-kakapo"><svg viewBox="0 0 100 100" class="w-32 h-32 sm:w-48 sm:h-48 drop-shadow-2xl"><ellipse cx="50" cy="55" rx="35" ry="40" fill="#557B3E"/><circle cx="50" cy="35" r="20" fill="#759A4E"/><path d="M45,40 L55,40 L50,50 Z" fill="#B0A080"/><circle cx="42" cy="32" r="2" fill="#000"/><circle cx="58" cy="32" r="2" fill="#000"/><path d="M15,55 Q5,70 15,85" stroke="#446130" stroke-width="3" fill="none"/></svg></template>
+
+    <div class="absolute top-2 sm:top-4 right-2 sm:right-4 z-[60] flex gap-2 sm:gap-4 pointer-events-auto">
+        <button id="btn-educator" class="game-btn bg-indigo-600 hover:bg-indigo-500 text-white rounded-full w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center text-lg sm:text-2xl border-2 sm:border-4 border-white shadow-lg" title="Educator Notes">💡</button>
+        <button id="btn-music" class="game-btn bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-full w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center text-lg sm:text-2xl border-2 sm:border-4 border-white shadow-lg">🎵</button>
+        <button id="btn-speech" class="game-btn bg-blue-600 hover:bg-blue-500 text-white rounded-full w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center text-lg sm:text-2xl border-2 sm:border-4 border-white shadow-lg">🔊</button>
+    </div>
+
+    <!-- MAIN HUB SCREEN -->
+    <div id="screen-hub" class="screen-container slide-in-right absolute inset-0 flex flex-col items-center pt-20 pb-4 z-20 pointer-events-none">
+        <div class="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-2xl border-4 border-blue-300 mb-6 text-center max-w-2xl mx-4 z-10 shrink-0 mt-4 sm:mt-0 relative overflow-hidden pointer-events-auto">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-fuchsia-400 via-indigo-500 to-blue-400"></div>
+            <h1 class="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-fuchsia-600 mb-2 drop-shadow-sm">Pīwakawaka's Advanced Aerospace Journey</h1>
+            <p class="text-slate-700 text-lg sm:text-2xl font-bold" id="hub-instruction">Kia ora! Let's explore the amazing world of Aerospace and Space Exploration!</p>
+        </div>
+        <div id="map-nodes" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 relative z-10 w-full max-w-4xl px-4 overflow-y-auto scroll-area flex-1 min-h-0 pb-32 sm:pb-12 pointer-events-auto"></div>
+    </div>
+
+    <!-- LEVEL PLAY SCREEN -->
+    <div id="screen-level" class="screen-container slide-out-right absolute inset-0 flex flex-col z-10 pt-20 sm:pt-24 pointer-events-none">
+        
+        <div class="absolute top-2 sm:top-4 left-2 sm:left-4 z-50 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 pointer-events-auto max-w-[60%]">
+            <button id="btn-back" class="game-btn bg-rose-600 hover:bg-rose-500 text-white rounded-full px-4 py-2 sm:px-6 sm:py-3 font-black text-sm sm:text-xl border-2 sm:border-4 border-white whitespace-nowrap shadow-lg">⬅️ Mission Control</button>
+            <div id="level-progress" class="bg-white/95 backdrop-blur-md rounded-full px-2 sm:px-4 py-1 sm:py-2 flex items-center gap-0.5 sm:gap-1 shadow-lg border-2 border-blue-300 min-h-[32px] sm:min-h-[44px]"></div>
+        </div>
+
+        <div class="relative flex-1 min-h-0 w-full overflow-y-auto scroll-area z-10 pointer-events-auto" id="level-playarea">
+            <!-- QA FIX APPLIED: pb-64 (padding-bottom: 16rem) explicitly forces scroll height without relying on a brittle spacer div. -->
+            <div class="flex flex-col items-center justify-start min-h-full p-4 sm:p-8 pb-64 sm:pb-48 w-full max-w-4xl mx-auto">
+                <div id="instruction-box" class="speech-bubble bg-white p-5 sm:p-8 rounded-3xl shadow-2xl border-4 border-indigo-300 text-center w-full mb-8 sm:mb-10 transition-all duration-300 z-20">
+                    <p id="level-instruction" class="text-xl sm:text-3xl font-bold text-slate-800 leading-snug"></p>
+                </div>
+                
+                <div id="level-character" class="mb-4 z-10 transform scale-90 sm:scale-110 origin-bottom filter drop-shadow-2xl"></div>
+                
+                <div id="level-visual" class="bg-white/95 p-6 sm:p-8 rounded-full shadow-xl border-4 border-blue-400 font-black text-slate-800 text-center flex items-center justify-center min-w-[120px] min-h-[120px] mb-8 sm:mb-10 transition-transform duration-200 animate-pulse-glow"></div>
+                
+                <div id="level-options" class="flex flex-col w-full max-w-2xl gap-4 sm:gap-6 mt-4 px-2"></div>
+            </div>
+        </div>
+        
+        <div id="loading-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-lg z-[55] hidden flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+            <div class="text-6xl animate-spin mb-4">🛰️</div>
+            <h3 class="text-3xl font-black text-blue-600 bg-white px-8 py-3 rounded-full shadow-2xl border-4 border-blue-400">Calculating Trajectory...</h3>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="modal-success" class="absolute inset-0 bg-slate-900/60 flex items-center justify-center z-[70] hidden backdrop-blur-md pointer-events-auto">
+        <div class="bg-white p-8 sm:p-10 rounded-3xl shadow-2xl border-8 border-fuchsia-400 text-center max-w-sm mx-4 transform transition-transform scale-90" id="success-box">
+            <div class="text-7xl mb-4 animate-bounce">🚀</div>
+            <h2 class="text-3xl font-black text-fuchsia-600 mb-4" id="success-title">Ka pai! Super smart!</h2>
+            <p class="text-xl font-bold text-slate-700 mb-8" id="success-msg">Mission learned! Level Complete!</p>
+            <button id="btn-next" class="game-btn bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-black text-2xl py-4 px-8 rounded-full border-4 border-white w-full shadow-lg">Next Sequence!</button>
+        </div>
+    </div>
+
+    <!-- FINALE MODAL -->
+    <div id="modal-finale" class="absolute inset-0 bg-slate-900/60 flex items-center justify-center z-[70] hidden backdrop-blur-xl pointer-events-auto">
+        <div class="bg-white p-8 sm:p-10 rounded-3xl shadow-2xl border-8 border-blue-400 text-center max-w-md mx-4 transform transition-transform scale-90 relative overflow-hidden" id="finale-box">
+            <div class="absolute inset-0 starfield opacity-30 pointer-events-none"></div>
+            <div class="text-8xl mb-4 animate-bounce relative z-10">👑🚀👑</div>
+            <h2 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-fuchsia-600 mb-4 relative z-10">Tino Pai Rawa Atu!</h2>
+            <p class="text-xl font-bold text-slate-700 mb-8 relative z-10">You completed the Advanced Aerospace Journey! You are an incredible Space Captain!</p>
+            <button id="btn-restart" class="game-btn bg-blue-600 hover:bg-blue-500 text-white font-black text-2xl py-4 px-8 rounded-full border-4 border-white w-full shadow-lg relative z-10">Launch Again</button>
+        </div>
+    </div>
+
+    <!-- EDUCATOR MODAL -->
+    <div id="modal-educator" class="absolute inset-0 bg-slate-900/60 flex items-center justify-center z-[80] hidden backdrop-blur-md pointer-events-auto">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl border-8 border-indigo-600 max-w-2xl mx-4 transform transition-transform scale-90 max-h-[90vh] overflow-y-auto" id="educator-box">
+            <h2 class="text-3xl font-black text-indigo-800 mb-4 text-center">Educator Notes: Aerospace & Pedagogy</h2>
+            <div class="text-slate-800 space-y-4 mb-6 text-sm sm:text-base font-bold">
+                <p>This application integrates <strong>50 Advanced Aerospace Concepts</strong> designed to gently introduce the foundations of Space Exploration and Engineering to 4-to-6-year-olds.</p>
+                <p>It utilizes <strong>Cognitive Load Theory (CLT)</strong> by John Sweller to make advanced concepts accessible:</p>
+                <ul class="list-disc pl-6 space-y-2">
+                    <li><strong>Minimizing Extraneous Load:</strong> Interfaces are stripped of unnecessary text. The scrolling layout enforces a vertical flex-column with heavy padding to ensure perfect tactile mobile behavior.</li>
+                    <li><strong>Managing Intrinsic Load:</strong> Complex technical ideas (e.g., Aerodynamics, Lift, Orbits, Black Holes, Exoplanets) are reduced to highly relatable, physical metaphors (e.g., "slicing the wind", "invisible strings", "circle games").</li>
+                    <li><strong>Modality Effect:</strong> The Text-to-Speech (TTS) feature prevents working memory overload by offloading reading demands to the auditory channel.</li>
+                </ul>
+            </div>
+            <button id="btn-close-educator" class="game-btn bg-indigo-700 hover:bg-indigo-600 text-white font-black text-xl py-3 px-6 rounded-full border-4 border-white w-full text-center shadow-lg">System Understood!</button>
+        </div>
+    </div>
+
+    <script>
+        const GameState = { unlockedLevel: 1, currentLevelObj: null, currentScreen: 'hub', currentQuestionIndex: 0 };
+
+        const SoundManager = {
+            isMusicPlaying: false, initialized: false, bgMusic: null, bgParts: [], uiSynth: null, fxSynth: null, errorSynth: null,
+            init() {
+                if(this.initialized) return;
+                
+                this.uiSynth = new Tone.Synth({ oscillator: { type: "square" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 }}).toDestination();
+                this.uiSynth.volume.value = -15;
+                this.fxSynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sawtooth" }, envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 1 }}).toDestination();
+                this.fxSynth.volume.value = -12;
+                this.errorSynth = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 2, oscillator: { type: "triangle" }, envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.2 }}).toDestination();
+                this.errorSynth.volume.value = -10;
+                
+                this.bgMusic = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.1, decay: 0.2, sustain: 0.2, release: 0.5 }}).toDestination();
+                this.bgMusic.volume.value = -22;
+                
+                const melodies = [
+                    [{"time": "0:0:0", "note": "C4", "dur": "8n"}, {"time": "0:0:2", "note": "G4", "dur": "8n"}, {"time": "0:1:0", "note": "E4", "dur": "4n"}, {"time": "0:2:0", "note": "C5", "dur": "8n"}, {"time": "0:2:2", "note": "G4", "dur": "8n"}, {"time": "0:3:0", "note": "E4", "dur": "4n"}],
+                    [{"time": "0:0:0", "note": "D4", "dur": "8n"}, {"time": "0:0:2", "note": "A4", "dur": "8n"}, {"time": "0:1:0", "note": "F4", "dur": "4n"}, {"time": "0:2:0", "note": "D5", "dur": "8n"}, {"time": "0:2:2", "note": "A4", "dur": "8n"}, {"time": "0:3:0", "note": "F4", "dur": "4n"}],
+                ];
+
+                this.bgParts = melodies.map(mel => {
+                    const part = new Tone.Part((time, value) => {
+                        this.bgMusic.triggerAttackRelease(value.note, value.dur, time);
+                    }, mel);
+                    part.loop = true; part.loopEnd = "1m"; return part;
+                });
+
+                Tone.Transport.loop = true; Tone.Transport.loopEnd = "16m";
+                const bpms = [100, 105]; 
+                
+                this.bgParts[0].start("0m").stop("8m");
+                this.bgParts[1].start("8m").stop("16m");
+
+                Tone.Transport.schedule((time) => Tone.Transport.bpm.setValueAtTime(bpms[0], time), "0m");
+                Tone.Transport.schedule((time) => Tone.Transport.bpm.setValueAtTime(bpms[1], time), "8m");
+
+                this.initialized = true;
+            },
+            playClick() { if(this.isMusicPlaying && Tone.context && Tone.context.state === 'running') this.uiSynth.triggerAttackRelease("C6", "32n"); },
+            playSuccess() { 
+                if(this.isMusicPlaying && Tone.context && Tone.context.state === 'running') {
+                    const now = Tone.now();
+                    this.fxSynth.triggerAttackRelease(["C4", "E4", "G4"], "8n", now);
+                    this.fxSynth.triggerAttackRelease(["G4", "C5", "E5"], "8n", now + 0.15);
+                } 
+            },
+            playError() { if(this.isMusicPlaying && Tone.context && Tone.context.state === 'running') this.errorSynth.triggerAttackRelease("C2", "8n"); },
+            async toggleMusic() {
+                if(!this.initialized) { await Tone.start(); this.init(); }
+                const btn = document.getElementById('btn-music');
+                if (this.isMusicPlaying) { Tone.Transport.pause(); btn.classList.replace('bg-blue-500', 'bg-fuchsia-600'); this.isMusicPlaying = false; } 
+                else { Tone.Transport.start(); btn.classList.replace('bg-fuchsia-600', 'bg-blue-500'); this.isMusicPlaying = true; }
+            }
+        };
+
+        let femaleVoice = null;
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            femaleVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Google UK English Female')));
+            if (!femaleVoice) femaleVoice = voices.find(v => v.lang.startsWith('en'));
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
+
+        const levelsData = [
+            { id: 1, title: "1. The Seed: The Sky", icon: "☁️", subject: "Flight Basics", characterId: "svg-piwakawaka", questions: [
+                { instruction: "Where do the birds fly?", visualHTML: `<div class="text-8xl">🦅</div>`, options: ["Up in the blue sky, right above our heads!", "Under the ground in the dirt", "Inside a hot volcano"], correctAnswer: "Up in the blue sky, right above our heads!", successMsg: "Ka pai! They fly up in the blue sky." },
+                { instruction: "What is hiding behind the blue sky?", visualHTML: `<div class="text-8xl">✨</div>`, options: ["Giant, beautiful, sparkly Space!", "A giant wall of cheese", "Nothing at all"], correctAnswer: "Giant, beautiful, sparkly Space!", successMsg: "Yes! Space is giant and sparkly." },
+                { instruction: "What does 'Aerospace' mean?", visualHTML: `<div class="text-8xl">✈️</div>`, options: ["It is the special word for exploring the sky and space", "A type of spicy space candy", "A fast running shoe"], correctAnswer: "It is the special word for exploring the sky and space", successMsg: "Awesome! Aerospace is for exploring the sky and space." },
+                { instruction: "How do we fly from one city to another?", visualHTML: `<div class="text-8xl">🏙️</div>`, options: ["In an airplane, with long, strong wings", "On a magic flying carpet", "In an underwater submarine"], correctAnswer: "In an airplane, with long, strong wings", successMsg: "Great! Airplanes use their strong wings." },
+                { instruction: "How do we fly all the way to the moon?", visualHTML: `<div class="text-8xl">🌕</div>`, options: ["In a super-fast rocket ship that points straight up!", "By jumping really, really high", "In a colorful hot air balloon"], correctAnswer: "In a super-fast rocket ship that points straight up!", successMsg: "Perfect! Rockets zoom straight up into space." }
+            ]},
+            { id: 2, title: "2. The Seed: Astronauts", icon: "👩‍🚀", subject: "Flight Basics", characterId: "svg-kekeno", questions: [
+                { instruction: "Who drives the spaceship?", visualHTML: `<div class="text-8xl">🚀</div>`, options: ["A brave explorer called an Astronaut!", "A sleepy little cat", "A deep-sea ocean diver"], correctAnswer: "A brave explorer called an Astronaut!", successMsg: "Ka pai! The brave astronaut steers the ship." },
+                { instruction: "Why do astronauts wear big white puffy suits?", visualHTML: `<div class="text-8xl">👔</div>`, options: ["To keep them warm and give them fresh air", "Because it is a pajamas party", "To hide from aliens"], correctAnswer: "To keep them warm and give them fresh air", successMsg: "Yes! The puffy suit keeps them safe." },
+                { instruction: "Why do we fall down when we jump?", visualHTML: `<div class="text-8xl">⬇️</div>`, options: ["Because the Earth has an invisible string called Gravity", "Because we wear very heavy shoes", "Because the wind pushes us down"], correctAnswer: "Because the Earth has an invisible string called Gravity", successMsg: "Awesome! Gravity gives us a gentle hug." },
+                { instruction: "Is there gravity in deep space?", visualHTML: `<div class="text-8xl">🌌</div>`, options: ["No! Without the invisible string, you get to float!", "Yes, you fall very fast", "Only on Tuesdays"], correctAnswer: "No! Without the invisible string, you get to float!", successMsg: "Great! You get to float like a bubble." },
+                { instruction: "Who builds the rockets?", visualHTML: `<div class="text-8xl">🛠️</div>`, options: ["Smart Aerospace Engineers who love building giant flying puzzles", "Bakers who make delicious cakes", "Friendly forest bears"], correctAnswer: "Smart Aerospace Engineers who love building giant flying puzzles", successMsg: "Perfect! Engineers build amazing machines." }
+            ]},
+            { id: 3, title: "3. Sprout: Aerodynamics", icon: "💨", subject: "Aerodynamics", characterId: "svg-kiwi", questions: [
+                { instruction: "If you run with a flat board, is it hard?", visualHTML: `<div class="text-8xl">🟪</div>`, options: ["Yes, the wind pushes back!", "No, it makes you fly", "It turns into a skateboard"], correctAnswer: "Yes, the wind pushes back!", successMsg: "Ka pai! The wind pushes flat things." },
+                { instruction: "If you run with a pointy dart, is it hard?", visualHTML: `<div class="text-8xl">🔺</div>`, options: ["No, the pointy shape slices right through the wind!", "Yes, it is very heavy", "It pops like a bubble"], correctAnswer: "No, the pointy shape slices right through the wind!", successMsg: "Yes! Pointy shapes slice the wind." },
+                { instruction: "Why is a rocket pointy at the top?", visualHTML: `<div class="text-8xl">🚀</div>`, options: ["So it can slice quickly through the sky into space", "So it can poke the fluffy clouds", "To look like a giant pencil"], correctAnswer: "So it can slice quickly through the sky into space", successMsg: "Awesome! It is perfectly shaped for speed." },
+                { instruction: "How do airplane wings hold the plane up?", visualHTML: `<div class="text-8xl">✈️</div>`, options: ["The wind slides over the curved wings and gently lifts them up", "They flap really fast like a bird", "They use magic invisible strings"], correctAnswer: "The wind slides over the curved wings and gently lifts them up", successMsg: "Great! The sliding wind creates lift." },
+                { instruction: "If you let go of a blown-up balloon, what happens?", visualHTML: `<div class="text-8xl">🎈</div>`, options: ["The air rushes out the back, and the balloon zooms forward!", "It turns into a pumpkin", "It falls straight down to the floor"], correctAnswer: "The air rushes out the back, and the balloon zooms forward!", successMsg: "Perfect! That push is called thrust." }
+            ]},
+            { id: 4, title: "4. Sprout: Orbits", icon: "🌍", subject: "Space Mechanics", characterId: "svg-huntaway", questions: [
+                { instruction: "Do rockets work like the balloon?", visualHTML: `<div class="text-8xl">🔥</div>`, options: ["Yes! They push hot fire out the bottom so the rocket zooms up!", "No, they use giant rubber bands", "They are pulled by a long string"], correctAnswer: "Yes! They push hot fire out the bottom so the rocket zooms up!", successMsg: "Ka pai! Pushing down makes it go up." },
+                { instruction: "What is the blue sky made of?", visualHTML: `<div class="text-8xl">🌤️</div>`, options: ["A cozy blanket of air wrapped around the Earth", "Blue paint on a giant ceiling", "A giant ocean of water"], correctAnswer: "A cozy blanket of air wrapped around the Earth", successMsg: "Yes! We live inside an air blanket." },
+                { instruction: "What happens when the rocket goes past the blanket?", visualHTML: `<div class="text-8xl">🌠</div>`, options: ["The sky turns black, and you are in Space!", "You hit a giant invisible roof", "You fall straight back to Earth"], correctAnswer: "The sky turns black, and you are in Space!", successMsg: "Awesome! Space is beautifully black." },
+                { instruction: "How does the moon stay near the Earth?", visualHTML: `<div class="text-8xl">🌘</div>`, options: ["It moves in a giant, fast circle called an Orbit", "It is tied to Earth with a rope", "It is glued to the sky"], correctAnswer: "It moves in a giant, fast circle called an Orbit", successMsg: "Great! Orbits are giant circle games." },
+                { instruction: "If a rocket goes fast enough in a circle, will it fall down?", visualHTML: `<div class="text-8xl">💫</div>`, options: ["It keeps falling, but it is going so fast it keeps missing the ground!", "It crashes immediately into the sea", "It turns into a shooting star"], correctAnswer: "It keeps falling, but it is going so fast it keeps missing the ground!", successMsg: "Perfect! Falling and missing is how you orbit." }
+            ]},
+            { id: 5, title: "5. Sprout: Space Tech", icon: "🛰️", subject: "Space Mechanics", characterId: "svg-kea", questions: [
+                { instruction: "What is a Satellite?", visualHTML: `<div class="text-8xl">📡</div>`, options: ["A helpful robot that plays the circle game around the Earth", "A floating TV screen", "A scary space monster"], correctAnswer: "A helpful robot that plays the circle game around the Earth", successMsg: "Ka pai! Satellites help us from space." },
+                { instruction: "How do we see a hurricane coming?", visualHTML: `<div class="text-8xl">🌀</div>`, options: ["A satellite looks down from space and takes a giant picture", "We ask the flying birds", "We use a really long telescope"], correctAnswer: "A satellite looks down from space and takes a giant picture", successMsg: "Yes! Satellites have giant camera eyes." },
+                { instruction: "Can humans live in space?", visualHTML: `<div class="text-8xl">🏠</div>`, options: ["Yes, in a giant floating metal house called a Space Station!", "No, it is way too cold", "Only if they hold their breath"], correctAnswer: "Yes, in a giant floating metal house called a Space Station!", successMsg: "Awesome! The Space Station is a floating house." },
+                { instruction: "How do you sleep if you are floating?", visualHTML: `<div class="text-8xl">😴</div>`, options: ["You zip yourself into a sleeping bag tied to the wall!", "You sleep on a soft floating cloud", "You don't sleep at all"], correctAnswer: "You zip yourself into a sleeping bag tied to the wall!", successMsg: "Great! Tying it to the wall stops you from bumping your head." },
+                { instruction: "Does water pour into a cup in space?", visualHTML: `<div class="text-8xl">💧</div>`, options: ["No, it floats in beautiful wobbly blobs!", "Yes, exactly like it does on Earth", "It turns into dry sand"], correctAnswer: "No, it floats in beautiful wobbly blobs!", successMsg: "Perfect! Floating water blobs are fun." }
+            ]},
+            { id: 6, title: "6. Sprout: Rovers", icon: "🚙", subject: "Exploration", characterId: "svg-whio", questions: [
+                { instruction: "How do we drive on Mars?", visualHTML: `<div class="text-8xl">🔴</div>`, options: ["We send a robot car called a Rover with special bumpy wheels", "We build a giant paved road", "We use a regular city taxi"], correctAnswer: "We send a robot car called a Rover with special bumpy wheels", successMsg: "Ka pai! Rovers are amazing robot explorers." },
+                { instruction: "Can we fly a helicopter on Mars?", visualHTML: `<div class="text-8xl">🚁</div>`, options: ["Yes! A tiny, brave robot helicopter named Ingenuity learned how", "No, there is no air there at all", "Only giant jumbo airplanes"], correctAnswer: "Yes! A tiny, brave robot helicopter named Ingenuity learned how", successMsg: "Yes! Ingenuity is a very brave robot." },
+                { instruction: "How does the space station get power?", visualHTML: `<div class="text-8xl">☀️</div>`, options: ["It has giant metal wings that catch the sunshine", "It uses millions of tiny batteries", "It plugs directly into the moon"], correctAnswer: "It has giant metal wings that catch the sunshine", successMsg: "Awesome! Those are called Solar Panels." },
+                { instruction: "When a spaceship comes back, does it get hot?", visualHTML: `<div class="text-8xl">🔥</div>`, options: ["Yes, it rubs against the air blanket and gets super hot!", "No, it turns into solid ice", "It stays perfectly cool"], correctAnswer: "Yes, it rubs against the air blanket and gets super hot!", successMsg: "Great! Friction with the air makes it hot." },
+                { instruction: "How does the spaceship stay safe from the heat?", visualHTML: `<div class="text-8xl">🛡️</div>`, options: ["It has a special, magic bottom that acts like a heat umbrella!", "We pour cold water on it", "It uses an air conditioner"], correctAnswer: "It has a special, magic bottom that acts like a heat umbrella!", successMsg: "Perfect! That umbrella is called a Heat Shield." }
+            ]},
+            { id: 7, title: "7. Stem: Future Tech", icon: "🚀", subject: "Advanced Aerospace", characterId: "svg-tui", questions: [
+                { instruction: "Do airplanes have to make smoke?", visualHTML: `<div class="text-8xl">🔋</div>`, options: ["Not in the future! We are inventing electric airplanes that use batteries", "Yes, they always will", "They run on delicious chocolate milk"], correctAnswer: "Not in the future! We are inventing electric airplanes that use batteries", successMsg: "Ka pai! Green airplanes keep the sky clean." },
+                { instruction: "What happens to the reusable rocket after it flies?", visualHTML: `<div class="text-8xl">🔄</div>`, options: ["It can land backward perfectly and fly again the very next day!", "It crashes into the deep ocean", "It stays in space forever"], correctAnswer: "It can land backward perfectly and fly again the very next day!", successMsg: "Yes! Reusable rockets are like magic." },
+                { instruction: "Is there rubbish floating in space?", visualHTML: `<div class="text-8xl">🗑️</div>`, options: ["Yes, old broken satellites", "No, space is perfectly clean", "Yes, floating candy wrappers"], correctAnswer: "Yes, old broken satellites", successMsg: "Awesome! Space junk is a real problem." },
+                { instruction: "How do we clean up the space junk?", visualHTML: `<div class="text-8xl">🧹</div>`, options: ["We build special robot sweepers with giant nets to keep space tidy!", "We use a giant vacuum cleaner", "We ask space aliens to clean it"], correctAnswer: "We build special robot sweepers with giant nets to keep space tidy!", successMsg: "Great! Space sweepers are super helpful." },
+                { instruction: "Are we going back to the Moon?", visualHTML: `<div class="text-8xl">⛺</div>`, options: ["Yes, to build a cozy camp where scientists can live and learn", "No, we have seen it all", "Only to play a game of golf"], correctAnswer: "Yes, to build a cozy camp where scientists can live and learn", successMsg: "Perfect! The moon base will be an amazing camp." }
+            ]},
+            { id: 8, title: "8. Stem: Deep Space", icon: "🔭", subject: "Advanced Aerospace", characterId: "svg-ruru", questions: [
+                { instruction: "Is there water on the moon?", visualHTML: `<div class="text-8xl">🧊</div>`, options: ["Yes, frozen ice hidden in deep, dark craters!", "No, it is completely dry", "Yes, giant rivers of lemonade"], correctAnswer: "Yes, frozen ice hidden in deep, dark craters!", successMsg: "Ka pai! The moon hides ice in the dark." },
+                { instruction: "Will humans visit the red planet, Mars?", visualHTML: `<div class="text-8xl">🧑‍🚀</div>`, options: ["Yes! It is a long journey, so we are building the biggest rockets ever", "No, it is too red", "Only robot dogs will go"], correctAnswer: "Yes! It is a long journey, so we are building the biggest rockets ever", successMsg: "Yes! Mars is the next big adventure." },
+                { instruction: "What happens if a plane flies faster than sound?", visualHTML: `<div class="text-8xl">💥</div>`, options: ["It makes a giant, invisible BOOM like a drum!", "It turns completely silent", "It catches on fire"], correctAnswer: "It makes a giant, invisible BOOM like a drum!", successMsg: "Awesome! That is called a Sonic Boom." },
+                { instruction: "Can we make super-fast planes quiet?", visualHTML: `<div class="text-8xl">🤫</div>`, options: ["Yes, engineers are designing pointy noses that make the boom a gentle shhh", "No, fast always means loud", "Only by flying completely backwards"], correctAnswer: "Yes, engineers are designing pointy noses that make the boom a gentle shhh", successMsg: "Great! Quiet supersonic planes are the future." },
+                { instruction: "How do we see stars that are very, very far away?", visualHTML: `<div class="text-8xl">🔭</div>`, options: ["We use a giant space mirror called a Telescope", "We wear special magic glasses", "We squint our eyes really hard"], correctAnswer: "We use a giant space mirror called a Telescope", successMsg: "Perfect! Telescopes are like giant eyes in space." }
+            ]},
+            { id: 9, title: "9. Stem: Discoveries", icon: "🪐", subject: "Astronomy", characterId: "svg-takahe", questions: [
+                { instruction: "When we look at a far-away star, are we seeing the past?", visualHTML: `<div class="text-8xl">⏳</div>`, options: ["Yes! The light took so long to reach us, it is like a picture from long ago", "No, we see the future", "We see it exactly right now"], correctAnswer: "Yes! The light took so long to reach us, it is like a picture from long ago", successMsg: "Ka pai! Telescopes are like time machines." },
+                { instruction: "What is a Black Hole?", visualHTML: `<div class="text-8xl">🕳️</div>`, options: ["A spot in space with an invisible string so strong, even light can't escape its giant hug!", "A hole painted on the moon", "A dark cloud of smoke"], correctAnswer: "A spot in space with an invisible string so strong, even light can't escape its giant hug!", successMsg: "Yes! Black holes have the strongest gravity." },
+                { instruction: "What is an Asteroid?", visualHTML: `<div class="text-8xl">🪨</div>`, options: ["A giant, tumbling space rock leftover from when the planets were built", "A star that fell asleep", "A piece of an alien spaceship"], correctAnswer: "A giant, tumbling space rock leftover from when the planets were built", successMsg: "Awesome! Asteroids are ancient space rocks." },
+                { instruction: "Can we stop an asteroid from bumping the Earth?", visualHTML: `<div class="text-8xl">☄️</div>`, options: ["Yes, we can gently push it away with a rocket!", "No, we just have to hide", "We can catch it in a giant net"], correctAnswer: "Yes, we can gently push it away with a rocket!", successMsg: "Great! We can push them to keep Earth safe." },
+                { instruction: "Are there other Earths out there?", visualHTML: `<div class="text-8xl">🌍</div>`, options: ["Yes, we have found thousands of planets spinning around other stars!", "No, ours is the only one", "Yes, but they are all made of ice"], correctAnswer: "Yes, we have found thousands of planets spinning around other stars!", successMsg: "Perfect! Those are called Exoplanets." }
+            ]},
+            { id: 10, title: "10. Bloom: The Captain", icon: "⭐", subject: "Space Vision", characterId: "svg-kakapo", questions: [
+                { instruction: "If you flew your spaceship to a brand-new planet, what would you name it?", visualHTML: `<div class="text-8xl">✍️</div>`, options: ["Planet Piwakawaka!", "Planet Boring", "Planet Onion"], correctAnswer: "Planet Piwakawaka!", successMsg: "Ka pai! That is a beautiful name for a planet." },
+                { instruction: "If you wanted your rocket to go super fast, what shape would you make the nose?", visualHTML: `<div class="text-8xl">✏️</div>`, options: ["Like a very sharp pencil!", "Like a flat square", "Like a bumpy potato"], correctAnswer: "Like a very sharp pencil!", successMsg: "Yes! Slicing the wind is the secret." },
+                { instruction: "Is the dark of space scary?", visualHTML: `<div class="text-8xl">🌟</div>`, options: ["No, it is just a giant playground filled with beautiful twinkling stars", "Yes, there are monsters", "Yes, it is too spooky"], correctAnswer: "No, it is just a giant playground filled with beautiful twinkling stars", successMsg: "Awesome! Space is a beautiful place to explore." },
+                { instruction: "What is the most important rule of exploring space?", visualHTML: `<div class="text-8xl">🤝</div>`, options: ["To keep it clean, peaceful, and share our discoveries with everyone on Earth", "To claim everything for yourself", "To leave your rubbish behind"], correctAnswer: "To keep it clean, peaceful, and share our discoveries with everyone on Earth", successMsg: "Great! Sharing discoveries is the golden rule." },
+                { instruction: "Who is steering the ship to the future?", visualHTML: `<div class="text-8xl">👑</div>`, options: ["I am! Because I am ready to explore the unknown", "My pet dog", "A sleeping robot"], correctAnswer: "I am! Because I am ready to explore the unknown", successMsg: "Perfect! You are the bold Captain of the future!" }
+            ]}
+        ];
+
+        function sanitizeForSpeech(text) {
+            let safeText = text;
+            // QA FIX APPLIED: Removed obsolete 'AI' mapping from dictionary, kept Māori pronunciations intact.
+            const dictionary = {"Kia ora": "Hello", "Pīwakawaka": "Fantail bird", "Ka pai": "Good job", "Tino Pai Rawa Atu": "Excellent", "Kekeno": "New Zealand fur seal"};
+            for (const [maori, english] of Object.entries(dictionary)) {
+                safeText = safeText.replace(new RegExp(maori, "gi"), english);
+            }
+            return safeText;
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(sanitizeForSpeech(text));
+            if (femaleVoice) utterance.voice = femaleVoice;
+            utterance.rate = 0.9; utterance.pitch = 1.2;
+            
+            const box = document.getElementById('instruction-box');
+            if (box && GameState.currentScreen === 'level') {
+                utterance.onstart = () => box.classList.add('tts-active');
+                utterance.onend = () => box.classList.remove('tts-active');
+                utterance.onerror = () => box.classList.remove('tts-active');
+            }
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function burstTechConfetti(x, y) {
+            const symbols = ['⭐', '✨', '🚀', '💫', '☄️'];
+            for (let i = 0; i < 25; i++) {
+                let particle = document.createElement('div');
+                particle.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                particle.className = 'particle text-3xl drop-shadow-lg';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 80 + Math.random() * 150;
+                particle.style.setProperty('--tx', `calc(-50% + ${Math.cos(angle) * velocity}px)`);
+                particle.style.setProperty('--ty', `calc(-50% + ${Math.sin(angle) * velocity}px)`);
+                particle.style.setProperty('--rot', `${Math.random() * 360}deg`);
+                
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 800);
+            }
+        }
+
+        function renderHub() {
+            const container = document.getElementById('map-nodes');
+            container.innerHTML = '';
+            levelsData.forEach((level) => {
+                const isLocked = level.id > GameState.unlockedLevel;
+                const btn = document.createElement('button');
+                btn.className = `game-btn p-4 sm:p-6 rounded-3xl border-4 text-left flex items-center gap-4 w-full ${isLocked ? 'bg-slate-100 border-slate-200 level-locked text-slate-400' : 'bg-white border-blue-400 hover:bg-blue-50 shadow-md'}`;
+                btn.innerHTML = `<div class="text-4xl sm:text-5xl drop-shadow-sm">${isLocked ? '🔒' : level.icon}</div><div class="flex-1 min-w-0"><div class="font-black text-lg sm:text-2xl ${isLocked ? 'text-slate-400' : 'text-slate-800'} truncate">${level.title}</div><div class="text-sm sm:text-base font-bold uppercase tracking-wider ${isLocked ? 'text-slate-400' : 'text-fuchsia-600'}">${isLocked ? 'Locked' : level.subject}</div></div>`;
+                if (!isLocked) btn.onclick = () => loadLevel(level);
+                container.appendChild(btn);
+            });
+        }
+
+        function loadLevel(level, isNextQuestion = false) {
+            GameState.currentLevelObj = level;
+            GameState.currentScreen = 'level';
+            
+            if (!isNextQuestion) {
+                GameState.currentQuestionIndex = 0;
+                document.getElementById('screen-hub').classList.replace('slide-in-right', 'slide-out-left');
+                document.getElementById('screen-level').classList.replace('slide-out-right', 'slide-in-right');
+            }
+            
+            const currentQ = level.questions[GameState.currentQuestionIndex];
+            
+            const progressContainer = document.getElementById('level-progress');
+            progressContainer.innerHTML = '';
+            for (let i = 0; i < level.questions.length; i++) {
+                const star = document.createElement('span');
+                star.innerText = '⭐';
+                star.className = `text-sm sm:text-xl drop-shadow-md ${i <= GameState.currentQuestionIndex ? 'star-filled' : 'star-empty'}`;
+                progressContainer.appendChild(star);
+            }
+            
+            document.getElementById('level-instruction').innerText = currentQ.instruction;
+            document.getElementById('level-visual').innerHTML = currentQ.visualHTML;
+            document.getElementById('level-character').innerHTML = document.getElementById(level.characterId).innerHTML;
+            document.getElementById('level-character').className = 'animate-float';
+
+            const optionsContainer = document.getElementById('level-options');
+            optionsContainer.innerHTML = '';
+            
+            const colors = ['bg-indigo-100 border-indigo-400 text-indigo-900', 'bg-blue-100 border-blue-400 text-blue-900', 'bg-fuchsia-100 border-fuchsia-400 text-fuchsia-900'];
+            currentQ.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `game-btn ${colors[idx % colors.length]} hover:brightness-95 font-black text-lg sm:text-2xl py-4 px-6 sm:py-5 sm:px-8 rounded-2xl border-4 w-full h-auto min-h-[72px] whitespace-normal break-words leading-snug flex items-center justify-center shadow-lg relative overflow-hidden`;
+                btn.innerHTML = `<span class="relative z-10">${opt}</span>`;
+                btn.onclick = () => checkAnswer(opt, level, btn);
+                optionsContainer.appendChild(btn);
+            });
+            
+            document.getElementById('level-playarea').scrollTop = 0;
+        }
+
+        function checkAnswer(selected, level, btnElement) {
+            const currentQ = level.questions[GameState.currentQuestionIndex];
+            const allBtns = document.getElementById('level-options').querySelectorAll('button');
+            
+            if (selected === currentQ.correctAnswer) {
+                SoundManager.playSuccess();
+                allBtns.forEach(b => b.disabled = true);
+                
+                btnElement.className = "game-btn bg-yellow-400 border-yellow-500 text-slate-900 font-black text-lg sm:text-2xl py-4 px-6 sm:py-5 sm:px-8 rounded-2xl border-4 w-full scale-[1.02] sm:scale-105 h-auto min-h-[72px] whitespace-normal break-words leading-snug flex items-center justify-center z-10 transition-transform duration-300 shadow-xl";
+                
+                const rect = btnElement.getBoundingClientRect();
+                burstTechConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                
+                document.getElementById('level-character').classList.replace('animate-float', 'animate-bounce-fast');
+                speak(currentQ.successMsg);
+
+                if (GameState.currentQuestionIndex < level.questions.length - 1) {
+                    setTimeout(() => {
+                        const loader = document.getElementById('loading-overlay');
+                        loader.classList.remove('hidden');
+                        loader.classList.add('pointer-events-auto');
+                        setTimeout(() => loader.classList.remove('opacity-0'), 10);
+                        
+                        setTimeout(() => {
+                            GameState.currentQuestionIndex++; 
+                            loadLevel(level, true);
+                            loader.classList.add('opacity-0');
+                            loader.classList.remove('pointer-events-auto');
+                            setTimeout(() => loader.classList.add('hidden'), 300);
+                        }, 1200); 
+                    }, 1500);
+                } else {
+                    setTimeout(() => {
+                        if(level.id === 10) { 
+                            const modal = document.getElementById('modal-finale');
+                            modal.classList.remove('hidden'); 
+                            document.getElementById('finale-box').classList.remove('scale-90');
+                            speak("Tino Pai Rawa Atu! You are an incredible Space Captain!");
+                        } else {
+                            const modal = document.getElementById('modal-success');
+                            modal.classList.remove('hidden'); 
+                            document.getElementById('success-box').classList.remove('scale-90');
+                            speak("Ka pai! Super smart!");
+                            if (GameState.unlockedLevel === level.id) GameState.unlockedLevel++;
+                        }
+                    }, 1500);
+                }
+            } else {
+                SoundManager.playError();
+                
+                const originalClass = btnElement.className;
+                btnElement.className = "game-btn bg-rose-600 border-rose-700 text-white font-black text-lg sm:text-2xl py-4 px-6 sm:py-5 sm:px-8 rounded-2xl border-4 w-full h-auto min-h-[72px] whitespace-normal break-words leading-snug flex items-center justify-center shadow-lg";
+                
+                setTimeout(() => btnElement.className = originalClass, 500);
+
+                const charEl = document.getElementById('level-character');
+                charEl.classList.remove('animate-float');
+                void charEl.offsetWidth; 
+                charEl.classList.add('error-shake');
+                setTimeout(() => { charEl.classList.remove('error-shake'); charEl.classList.add('animate-float'); }, 400);
+
+                speak("Not quite! Let's try again. " + currentQ.instruction);
+            }
+        }
+
+        window.onload = () => {
+            document.getElementById('btn-back')?.addEventListener('click', () => {
+                GameState.currentScreen = 'hub';
+                document.getElementById('screen-level').classList.replace('slide-in-right', 'slide-out-right');
+                document.getElementById('screen-hub').classList.replace('slide-out-left', 'slide-in-right');
+                window.speechSynthesis.cancel(); renderHub();
+            });
+            
+            document.getElementById('btn-next')?.addEventListener('click', () => {
+                document.getElementById('success-box').classList.add('scale-90');
+                setTimeout(() => document.getElementById('modal-success').classList.add('hidden'), 200);
+                document.getElementById('btn-back').click();
+            });
+
+            document.getElementById('btn-restart')?.addEventListener('click', () => {
+                document.getElementById('finale-box').classList.add('scale-90');
+                setTimeout(() => document.getElementById('modal-finale').classList.add('hidden'), 200);
+                GameState.unlockedLevel = 1;
+                document.getElementById('btn-back').click();
+            });
+            
+            document.getElementById('btn-speech')?.addEventListener('click', () => {
+                if (GameState.currentScreen === 'hub') speak(document.getElementById('hub-instruction').innerText);
+                else if (GameState.currentScreen === 'level') speak(GameState.currentLevelObj.questions[GameState.currentQuestionIndex].instruction);
+            });
+            
+            document.getElementById('btn-educator')?.addEventListener('click', () => {
+                document.getElementById('modal-educator').classList.remove('hidden');
+                setTimeout(() => document.getElementById('educator-box').classList.remove('scale-90'), 10);
+            });
+            
+            document.getElementById('btn-close-educator')?.addEventListener('click', () => {
+                document.getElementById('educator-box').classList.add('scale-90');
+                setTimeout(() => document.getElementById('modal-educator').classList.add('hidden'), 200);
+            });
+            
+            document.getElementById('btn-music')?.addEventListener('click', () => SoundManager.toggleMusic());
+            document.body.addEventListener('click', (e) => { if (e.target.closest('.game-btn') && e.target.id !== 'btn-music') SoundManager.playClick(); });
+            
+            renderHub();
+        };
+    </script>
+</body>
+</html>
